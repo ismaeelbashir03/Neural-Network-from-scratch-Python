@@ -1435,7 +1435,7 @@ class Model():
         # we can now return our model
         return model
 
-#---------- use case -----------#
+#---------- testing -----------#
 
 '''# train data
 X, y = spiral_data(samples = 1000, classes=3)
