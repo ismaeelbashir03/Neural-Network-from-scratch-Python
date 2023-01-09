@@ -1474,36 +1474,3 @@ class Model():
         
         # we can now return our model
         return model
-
-#---------- use case -----------#
-
-'''# train data
-X, y = spiral_data(samples = 1000, classes=3)
-
-# test data
-X_test, y_test = spiral_data(samples = 1000, classes = 3)
-
-# creating our model
-model = Model()
-
-# adding our layer
-model.add(DenseLayer(2, 512, weight_reg_l2 = 5e-4, bias_reg_l2 = 5e-4))
-model.add(ReLUActivation())
-model.add(DropoutLayer(0.1))
-model.add(DenseLayer(512, 3))
-model.add(SoftmaxActivation())
-
-# setting our optimizer and loss functions
-model.set(
-    loss = CategoricalCrossEntropyLoss(), 
-    optimizer = AdamOptimizer(learning_rate = 0.05, decay_rate=5e-5),
-    accuracy = CategoricalAccuracy()
-)
-
-# we finalise our model (setup for training)
-model.finalize()
-
-# training our model
-model.train(X, y, validation_data=(X_test,y_test), epochs = 10000, print_every = 100)
-
-'''
