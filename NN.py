@@ -53,8 +53,8 @@ class DenseLayer():
         self.output = np.dot(inputs, self.weights) + self.bias
 
     # creating the back propogation for the Dense Layer. This is done by going back through
-    # our loss function and using the chain rule (we get the dirivitive of the current function 
-    # and pass it backwards to be multiplied by the previous functions dirivitive.) 
+    # our loss function and using the chain rule (we get the derivative of the current function 
+    # and pass it backwards to be multiplied by the previous functions derivative.) 
     # we do all this to get the final dirivitve with respect to weights, 
     # biases and inputs. we can use this to minimise our loss function.
     def backward(self, prev_d):
@@ -62,14 +62,14 @@ class DenseLayer():
         # just the sum of the inputs multiplied by the previous dirivitves from the next layer.
         # the reason we just use the inputs is because the function to multiply the weights by 
         # input is differentiated to inputs when respect to weights (f(x) = xy, f'(x) = y).
-        # Also we sum the inputs as we would have more than one dirivitive with respects to the 
+        # Also we sum the inputs as we would have more than one derivative with respects to the 
         # weightfor the function if we did not.
         # we put the weights first in our dot product to match the shape of weights when we 
         # use them later
         self.d_weights = np.dot(self.inputs.T, prev_d)
 
-        # to get the dirivitive of this function, it is just a sum, so the answer will be one
-        # so we can just add up the previous dirivitives along the columns to get the dirivitive
+        # to get the derivative of this function, it is just a sum, so the answer will be one
+        # so we can just add up the previous derivatives along the columns to get the derivative
         # for each bias.
         self.d_bias = np.sum(prev_d, axis = 0, keepdims = True)
 
@@ -108,8 +108,8 @@ class DenseLayer():
             # account as we use the function at the end of the forward pass.
             self.d_bias += 2*self.bias_reg_l2*self.bias
 
-        # to get the dirivitive of the inputs we need to sum all of the weights and then 
-        # multiply them by the previous dirivitives. we can do this using dot product and 
+        # to get the derivative of the inputs we need to sum all of the weights and then 
+        # multiply them by the previous derivatives. we can do this using dot product and 
         # the reason we just use the weights for inputs is the same as the reason for using 
         # the inputs for the weights, and we sum the weights for the same reason aswell.           
         self.d_inputs = np.dot(prev_d, self.weights.T)
@@ -149,13 +149,13 @@ class ReLUActivation():
         self.output = np.maximum(0, inputs)
     
     # creating the back propogation for the relu function. This is done by going back through
-    # our loss function and using the chain rule (we get the dirivitive of the current function 
-    # and pass it backwards to be multiplied by the previous functions dirivitive.) 
+    # our loss function and using the chain rule (we get the derivative of the current function 
+    # and pass it backwards to be multiplied by the previous functions derivative.) 
     # we do all this to get the final dirivitve with respect to weights, 
     # biases and inputs. we can use this to minimise our loss function.
     def backward(self, prev_d):
         
-        # we create a copy of our previous dirivitive so we dont modify the original
+        # we create a copy of our previous derivative so we dont modify the original
         self.d_inputs = prev_d.copy()
 
         # we go through each of the inputs and check if they are smaller 
@@ -163,7 +163,7 @@ class ReLUActivation():
         # differentiate a max function with zero, we either get zero or the constant
         #  multiplied by x. (f(x) = max(0,x), f'(x) = 1 if x > 0, or 0 otherwise, this is because
         # f(x) = x, f'(x) = 1). so if we did this manually, we would have a matrix of zeros and ones
-        # we would then use to multiply our previous dirivitive, which will end up making values 
+        # we would then use to multiply our previous derivative, which will end up making values 
         # zero (if multiplied by zero), or make them the same (if multiplied by 1)
         self.d_inputs[self.inputs <= 0] = 0
 
@@ -203,31 +203,31 @@ class SoftmaxActivation():
     
     #------ slow, use class ActivationSoftMaxLossCrossEntropy ------#
     # creating the back propogation for the softmax function. This is done by going back through
-    # our loss function and using the chain rule (we get the dirivitive of the current function 
-    # and pass it backwards to be multiplied by the previous functions dirivitive.) 
+    # our loss function and using the chain rule (we get the derivative of the current function 
+    # and pass it backwards to be multiplied by the previous functions derivative.) 
     # we do all this to get the final dirivitve with respect to weights, 
     # biases and inputs. we can use this to minimise our loss function.
     def backward(self, prev_d):
         
-        # first we create an array of shape of the previous dirivitive
+        # first we create an array of shape of the previous derivative
         self.d_inputs = np.empty_like(prev_d)
 
         # here we loop through each output of the softmax function and the 
-        # corrosponding previous dirivitive.
+        # corrosponding previous derivative.
         for i, (each_output, each_prev_d) in enumerate(zip(self.output, prev_d)):
             # we first flatten each output so we can work with it later
             each_output = each_output.reshape(-1,1)
 
-            # here we actually calculate the dirivitive. the dirivitive of this function 
+            # here we actually calculate the derivative. the derivative of this function 
             # ends up simplifying into ( output * kronecker delta ) - ( output * output )
             # A kronecker delta is 1 when i=j, but 0 when i != j. we get this as the 
-            # dirivitive of a fraction is the dirivitive of the top mult by the bottom
-            # subtracted by the dirivitive of the bottom mult by the top, we then divide this 
+            # derivative of a fraction is the derivative of the top mult by the bottom
+            # subtracted by the derivative of the bottom mult by the top, we then divide this 
             # all by the bottom squared. this simplifies to 
             # ( dy/dx(e^input)*sum(e^input) - e^(input)*dy/dx(sum(e^input))/ sum(e^input)^2)
-            # on the left of the subtraction the dirivitive is 1 when i=j for the output, but 
+            # on the left of the subtraction the derivative is 1 when i=j for the output, but 
             # zero when i != j. this either gives (- e^(input)*dy/dx(sum(e^input))/ sum(e^input)^2)
-            # which gives ( -e^input/sum(e^input) * e^input/sum(e^input) ), right hand side dirivitive
+            # which gives ( -e^input/sum(e^input) * e^input/sum(e^input) ), right hand side derivative
             # does nothing as it is just e. these bith are just softmax functions so we can say this 
             # simolifies to: -softmax*softmax, which is: softmax*(0-softmax)
             # the other case 1*e^output/sum(e^output) * (1 - e^output/sum(e^output)), which ends up being
@@ -249,7 +249,7 @@ class SoftmaxActivation():
             # but we need to tranform one of them to do the dot product.
             jacobian_matrix = np.diagflat(each_output) - np.dot(each_output, each_output.T)
 
-            # now that we have the dirivitive of this function, we can multiply it by each 
+            # now that we have the derivative of this function, we can multiply it by each 
             # gradient passed in to get a value to send back.
             self.d_inputs[i] = np.dot(jacobian_matrix, each_prev_d)
     
@@ -274,7 +274,7 @@ class SigmoidActivation():
         # getting the output of the sigmoid function with the input
         self.output = 1/(1 + np.exp(-inputs))
 
-    # the dirivitive of the sigmoid function is very common, it ends up being
+    # the derivative of the sigmoid function is very common, it ends up being
     # sigmoid * (1-sigmoid). we get this by taking th denominator up to get negative 
     # powers and solving to get: (1+e^-input)*(e^output * dy/dx(-output)) we can simplify
     # a bit to get: e^output/(1+e^outout)^2 = sigmoid * (1 - sigmoid), our output 
@@ -301,11 +301,11 @@ class LinearActivation():
         # we just set the output as the input
         self.output = self.inputs
     
-    # for the dirivitive of y = x, it is just 1 so we do 
-    # nothing to the previous dirivitive
+    # for the derivative of y = x, it is just 1 so we do 
+    # nothing to the previous derivative
     def backward(self, prev_d):
 
-        # 1 * previous dirivitive
+        # 1 * previous derivative
         self.d_inputs = prev_d.copy()
 
     # we use a prediction function to get values we can calculate accuracy with
@@ -532,8 +532,8 @@ class CategoricalCrossEntropyLoss(Loss):
 
     #------ slow, use class ActivationSoftMaxLossCrossEntropy ------#
     # creating the back propogation for the loss function. This is done by going back through
-    # our loss function and using the chain rule (we get the dirivitive of the current function 
-    # and pass it backwards to be multiplied by the previous functions dirivitive.) 
+    # our loss function and using the chain rule (we get the derivative of the current function 
+    # and pass it backwards to be multiplied by the previous functions derivative.) 
     # we do all this to get the final dirivitve with respect to weights, 
     # biases and inputs. we can use this to minimise our loss function.
     def backward(self, output, real_y):
@@ -562,7 +562,7 @@ class CategoricalCrossEntropyLoss(Loss):
             """ 
             real_y = np.eye(num_labels)[real_y]
 
-        # here we get the dirivitive by using the simplified version of the dirivitive of 
+        # here we get the derivative by using the simplified version of the derivative of 
         # ( -real_y * ln(output) ), this simifies to output / real_y
         self.d_inputs = - (real_y / output)
 
@@ -606,17 +606,17 @@ class BinaryCrossEntropyLoss(Loss):
         # dont divide by zero accidently
         clipped_outputs = np.clip(outputs, 1e-7, 1-1e-7)
 
-        # here we calculate the dirivitive. we gte this by first diriving each neuron first
+        # here we calculate the derivative. we gte this by first diriving each neuron first
         # this gives:
         # -real_y * dy/dx(log(pred_y)) - (1-real_y)*dy/dx(log(1-pred_y)) which gives:
         # -real_y/pred_y - (1-real_y)/(1-pred_y)*(0-1) = -(real_y/pred_y - (1-real_y)/(1-pred_y))
-        # now that we have the equation for each neuron we can get the dirivitive of the sum
+        # now that we have the equation for each neuron we can get the derivative of the sum
         # which is: 1/num_neurons * sum(each neuron), this ends up being 1/num_neurons as 
         # dy/dx(each nuron) = 1. we multiply these two to get:
         # 1/num_neurons * -(real_y/pred_y - (1-real_y)/(1-pred_y))
         self.d_inputs = -(real_y/clipped_outputs - (1-real_y) / (1-clipped_outputs)) / num_outputs
 
-        # here we normalise the dirivitive so the sum is small when we optimise
+        # here we normalise the derivative so the sum is small when we optimise
         self.d_inputs = self.d_inputs / num_batches
 
 # for scalar value predictions we cant use cross entropy so we can use mean squared
@@ -634,7 +634,7 @@ class MeanSquaredErrorLoss(Loss):
 
         return self.batch_loss
 
-    # to calculate the dirivitive of the mean squared error we can take out 
+    # to calculate the derivative of the mean squared error we can take out 
     # the division and get rid of the sum, this gives:
     # 1/num_loss(dy/dx((real_y-pred_y)**2)
     # = 1/num_loss(2(real_y-pred_y)*dy/dx(real_y-pred_y))
@@ -709,12 +709,12 @@ class ActivationSoftMaxLossCrossEntropy():
 
         # here we get the values of the correct index and subtract them from 
         # the real value they should be (this always ends up being 1)
-        # we do this as this is the simplified version of the dirivitive of 
+        # we do this as this is the simplified version of the derivative of 
         # the cross entropy loss and softmax activation functions. 
-        # the equation is dirivitive of loss with respect to predicted values
-        # mult by the dirivitive of softmax with respect to output of softmax (chain rule)
+        # the equation is derivative of loss with respect to predicted values
+        # mult by the derivative of softmax with respect to output of softmax (chain rule)
         # we can then say the answer of softmax is the predicted value so we can sub that in.
-        # we also know that dirivitive of loss is just sum of real y over predicted y so we can also
+        # we also know that derivative of loss is just sum of real y over predicted y so we can also
         # sub this in. We have to take into account both cases for our krocecker delta values so we can
         # multiply both cases to the loss dirvitive and subtract them (left side with sum i=j and right 
         # side with sum i!=j). this gives: 
@@ -1025,7 +1025,7 @@ class DropoutLayer():
         # here we multiply the output of the neurons by our dropout array
         self.output = inputs * self.binary_mask
 
-    # our back propigation for this is just the dirivitive of 0, which is zero
+    # our back propigation for this is just the derivative of 0, which is zero
     # or just 1 as the function if 1 is: input/1-q, which is (1/1-q)*dy/dx(input)
     # which gives = 1/1-q * 1 = 1/1-q, we can just multiply by our dropout array 
     # to get the same effect
